@@ -253,9 +253,7 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
             status("connection failed: not enough ports at device");
             return;
         }
-        usbSerialPort = driver.getPorts().get(portNum);
-        UsbDeviceConnection usbConnection = usbManager.openDevice(driver.getDevice());
-        if(usbConnection == null && usbPermission == UsbPermission.Unknown && !usbManager.hasPermission(driver.getDevice())) {
+        if(usbPermission == UsbPermission.Unknown && !usbManager.hasPermission(driver.getDevice())) {
             usbPermission = UsbPermission.Requested;
             int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_MUTABLE : 0;
             Intent intent = new Intent(INTENT_ACTION_GRANT_USB);
@@ -264,6 +262,8 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
             usbManager.requestPermission(driver.getDevice(), usbPermissionIntent);
             return;
         }
+        usbSerialPort = driver.getPorts().get(portNum);
+        UsbDeviceConnection usbConnection = usbManager.openDevice(driver.getDevice());
         if(usbConnection == null) {
             if (!usbManager.hasPermission(driver.getDevice()))
                 status("connection failed: permission denied");
