@@ -228,7 +228,8 @@ public abstract class CommonUsbSerialPort implements UsbSerialPort {
             // Android error propagation is improvable:
             //   response != null & nread == 0 can be: connection lost, buffer to small, ???
             if(nread == 0) {
-                testConnection(true);
+                //fails with device connected
+                //testConnection(true);
             }
         }
         return Math.max(nread, 0);
