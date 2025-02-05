@@ -305,7 +305,7 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
             return;
         }
         try {
-        byte[] data = (str + '\n').getBytes();
+        byte[] data = (str).getBytes();
             SpannableStringBuilder spn = new SpannableStringBuilder();
             spn.append("send " + data.length + " bytes\n");
             spn.append(HexDump.dumpHexString(data)).append("\n");
