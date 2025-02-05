@@ -22,6 +22,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -137,6 +138,33 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
         } else {
             receiveBtn.setOnClickListener(v -> read());
         }
+
+        //PRESETS
+        Button preset1 = view.findViewById(R.id.preset1);
+        preset1.setOnClickListener(v -> {
+            send("40");
+        });
+        Button preset2 = view.findViewById(R.id.preset2);
+        preset2.setOnClickListener(v -> {
+            send("50");
+        });
+        Button preset3 = view.findViewById(R.id.preset3);
+        preset3.setOnClickListener(v -> {
+            send("20");
+        });
+        Button preset4 = view.findViewById(R.id.preset4);
+        preset4.setOnClickListener(v -> {
+            send("40");
+        });
+        Button preset5 = view.findViewById(R.id.preset5);
+        preset5.setOnClickListener(v -> {
+            send("40");
+        });
+        Button preset6 = view.findViewById(R.id.preset6);
+        preset6.setOnClickListener(v -> {
+            send("40");
+        });
+
         return view;
     }
 
