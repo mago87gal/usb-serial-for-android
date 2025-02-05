@@ -199,7 +199,13 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
                 }
             }
             return true;
-        } else {
+        } else if( id == R.id.connect) {
+            connect();
+            return true;
+        } else if( id == R.id.disconnect) {
+            disconnect();
+            return true;
+        }else {
             return super.onOptionsItemSelected(item);
         }
     }

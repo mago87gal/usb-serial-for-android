@@ -10,4 +10,12 @@
         android:id="@+id/send_break"
         android:title="Send BREAK"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/connect"
+        android:title="Connect"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/disconnect"
+        android:title="Disconnect"
+        app:showAsAction="always" />
 </menu>
