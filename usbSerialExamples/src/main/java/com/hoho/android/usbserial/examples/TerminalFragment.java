@@ -42,8 +42,13 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class TerminalFragment extends Fragment implements SerialInputOutputManager.Listener {
+
+    private boolean runningProcess = false;
 
     private enum UsbPermission { Unknown, Requested, Granted, Denied }
 
@@ -63,6 +68,8 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
     private UsbSerialPort usbSerialPort;
     private UsbPermission usbPermission = UsbPermission.Unknown;
     private boolean connected = false;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private Future<?> currentTask;
 
     public TerminalFragment() {
         broadcastReceiver = new BroadcastReceiver() {
@@ -159,14 +166,42 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
         });
         Button preset5 = view.findViewById(R.id.preset5);
         preset5.setOnClickListener(v -> {
-            send("40");
+            send("7");
         });
         Button preset6 = view.findViewById(R.id.preset6);
         preset6.setOnClickListener(v -> {
-            send("40");
+            if(!runningProcess){
+                runningProcess = true;
+                currentTask = executorService.submit(this::runIteration);
+            }else{
+                runningProcess = false;
+                if (currentTask != null && !currentTask.isDone()) {
+                    currentTask.cancel(true);
+                }
+            }
         });
 
         return view;
+    }
+
+    private void runIteration() {
+        int delayBetweenCommands = 300; // Delay in milliseconds
+        while (runningProcess) {
+            try {
+                usbSerialPort.write("40".getBytes(), WRITE_WAIT_MILLIS);
+                Thread.sleep(delayBetweenCommands);  // Wait for 1 second
+                usbSerialPort.write("50".getBytes(), WRITE_WAIT_MILLIS);
+                Thread.sleep(delayBetweenCommands);  // Wait for 1 second
+                usbSerialPort.write("20".getBytes(), WRITE_WAIT_MILLIS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                break;
+            } catch (IOException e) {
+                e.printStackTrace();
+                break;
+            }
+        }
     }
 
     @Override
@@ -224,7 +259,7 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
     public void onRunError(Exception e) {
         mainLooper.post(() -> {
             status("connection lost: " + e.getMessage());
-            disconnect();
+            //disconnect();
         });
     }
 
@@ -293,6 +328,8 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
     }
 
     private void disconnect() {
+        runningProcess = false;
+        executorService.shutdown();
         connected = false;
         controlLines.stop();
         if(usbIoManager != null) {
@@ -300,9 +337,11 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
             usbIoManager.stop();
         }
         usbIoManager = null;
-        try {
-            usbSerialPort.close();
-        } catch (IOException ignored) {}
+        if(usbSerialPort != null){
+            try {
+                usbSerialPort.close();
+            } catch (IOException ignored) {}
+        }
         usbSerialPort = null;
     }
 
@@ -312,7 +351,7 @@ public class TerminalFragment extends Fragment implements SerialInputOutputManag
             return;
         }
         try {
-        byte[] data = (str).getBytes();
+            byte[] data = (str).getBytes();
             SpannableStringBuilder spn = new SpannableStringBuilder();
             spn.append("send " + data.length + " bytes\n");
             spn.append(HexDump.dumpHexString(data)).append("\n");
